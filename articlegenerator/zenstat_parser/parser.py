@@ -63,9 +63,8 @@ class SeleniumClient:
         try:
             next_page = WebDriverWait(self.driver, 90000000000).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, 'li[class="page-item page-next"]')))
-        except:
-            print('get_links не работает')
-        # next_page = self.driver.find_element(By.CSS_SELECTOR, 'li[class="page-item page-next"]')
+        except Exception as exc:
+            print('get_links не работает', exc)
         next_page.click()
 
     def get_page(self, pages):
@@ -86,9 +85,8 @@ class SeleniumClient:
                 table_link = WebDriverWait(self.driver, 900000000).until(
                     EC.visibility_of_element_located(
                         (By.ID, 'data-table')))
-            except:
-                print('get_page не работает')
-            # table_link = self.driver.find_element(By.ID, 'data-table')
+            except Exception as exc:
+                print('get_page не работает', exc)
             table_link_body = table_link.find_element(By.TAG_NAME, 'tbody')
             list_tr = table_link_body.find_elements(By.TAG_NAME, 'tr')
             for tr in list_tr:

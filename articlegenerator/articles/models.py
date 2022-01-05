@@ -17,6 +17,20 @@ class Article(models.Model):
         app_label = 'articles'
 
 
+class Post(models.Model):
+    header = models.TextField(null=True, verbose_name='Заголовок')
+    text = models.TextField(null=True, verbose_name='Текст')
+    link = models.TextField(null=True)
+
+    def __str__(self):
+        return self.link
+
+    class Meta:
+        ordering = ('header',)
+        verbose_name = 'Пост'
+        verbose_name_plural = 'Посты'
+
+
 class Image(models.Model):
     image = models.ImageField(verbose_name='картинка')
     link = models.TextField(null=True)
@@ -34,7 +48,6 @@ class Image(models.Model):
 class Prodashka(models.Model):
     title = models.TextField(null=True, verbose_name='Название продашки')
     text = models.TextField(null=True)
-    link = models.URLField()
 
     def __str__(self):
         return self.title
@@ -46,6 +59,7 @@ class Prodashka(models.Model):
 
 class Chanel(models.Model):
     title = models.TextField(null=True, verbose_name='Название канала')
+    login_data = models.TextField(null=True, verbose_name='данные для входа')
     operator = models.OneToOneField(User, on_delete=models.CASCADE)
 
     class Meta:
@@ -67,3 +81,16 @@ class Published(models.Model):
     class Meta:
         verbose_name = 'Публикация'
         verbose_name_plural = 'Публикации'
+
+
+class PublishedPost(models.Model):
+    author = models.OneToOneField('Chanel', on_delete=models.CASCADE)
+    post = models.OneToOneField('Post', on_delete=models.CASCADE)
+    prodashka = models.OneToOneField('Prodashka', on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.post.header
+
+    class Meta:
+        verbose_name = 'Публикация поста'
+        verbose_name_plural = 'Публикации постов'

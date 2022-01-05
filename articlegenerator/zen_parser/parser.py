@@ -2,6 +2,9 @@ import time
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
+
 from articles.models import Article, Image
 
 
@@ -11,19 +14,15 @@ class Parser:
         self.client = client
 
     def run(self):
-        for n in range(802, 812):
-            article = Article.objects.get(id=n)
-            data = self.client.extract(article)
-            # article.text = data[:2]
-            # article.header = data[2]
-            # article.save()
-            #
-            # list_src = data[0]
-            # for src in list_src:
-            #     image = Image()
-            #     image.link = src
-            #     image.article = article
-            #     image.save()
+        # for n in range(802, 812):
+        article = Article.objects.get(id=808)
+        data = self.client.extract(article)
+        if data is None:
+            print(article.link + 'none')
+        else:
+            article.text = data[1]
+            article.header = data[0]
+            article.save()
 
 
 class SeleniumClient:
@@ -38,27 +37,25 @@ class SeleniumClient:
         }
 
     def extract(self, article):
-        result = []
-        self.driver.get(article.link)
-        time.sleep(1)
-        body = self.driver.find_element(By.TAG_NAME, 'article')
-
-        images = body.find_elements(By.TAG_NAME, 'img')
+        content = []
         list_src = []
-        for img in images:
-            src = img.get_attribute("src")
-            print(src)
-            list_src.append(src)
-        header = body.find_element(By.TAG_NAME, 'h1').text
-        elements = body.find_elements(By.TAG_NAME, 'p').is_enabled()
-        if elements:
-            elements = body.find_elements(By.TAG_NAME, 'p')
-            text = []
-            for element in elements:
-                print(element.text)
-                el_text = element.text
-                text.append(el_text)
-            result.extend([list_src, text, header])
-        else:
-            result.extend([list_src, header])
-        return result
+        self.driver.get(article.link)
+        print(article.link)
+        time.sleep(1)
+        try:
+            body = WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="article-render"]')))
+            header = self.driver.find_element(By.TAG_NAME, 'h1').text
+            element = body.find_elements(By.CSS_SELECTOR, '*')
+
+            result = [header, content, list_src]
+            for e in element:
+                if e.tag_name == 'p':
+                    content.append(e.text)
+                elif e.tag_name == 'img':
+                    src = e.get_attribute("src")
+                    content.append(src)
+                    list_src.append(src)
+            return result
+        except Exception as exc:
+            return exc
