@@ -1,7 +1,6 @@
 import random
 
 from django.core.management import BaseCommand
-from selenium import webdriver
 from publications.post_publicator import *
 
 
@@ -14,3 +13,4 @@ class Command(BaseCommand):
         PROXY = random.choice(list_proxy)
         client = SeleniumClient(driver, PROXY)
         publicator = Publicator(client)
+        publicator.run()
