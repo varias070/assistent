@@ -22,14 +22,8 @@ class Publicator:
 
 class SeleniumClient:
 
-    def __init__(self, driver, PROXY):
+    def __init__(self, driver):
         self.driver = driver
-        webdriver.DesiredCapabilities.CHROME['proxy'] = {
-            "httpProxy": PROXY,
-            "ftpProxy": PROXY,
-            "sslProxy": PROXY,
-            "proxyType": "MANUAL",
-        }
 
     def login(self, published):
         try:
