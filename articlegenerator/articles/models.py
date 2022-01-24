@@ -47,6 +47,7 @@ class Image(models.Model):
 class Prodashka(models.Model):
     title = models.TextField(null=True, verbose_name='Название продашки')
     text = models.TextField(null=True)
+    link = models.CharField(null=True, max_length=120)
 
     def __str__(self):
         return self.title
@@ -56,10 +57,10 @@ class Prodashka(models.Model):
         verbose_name_plural = 'Продашки'
 
 
-class Chanel(models.Model):
+class Channel(models.Model):
     title = models.TextField(null=True, verbose_name='Название канала')
     login_data = models.TextField(null=True, verbose_name='пароль')
-    phone = models.CharField(verbose_name='привязанный номер телефона', null=True, max_length=30)
+    phone = models.CharField(verbose_name='привязанный номер телефона', null=True, max_length=30, blank=True)
 
     class Meta:
         verbose_name = 'Канал'
@@ -70,7 +71,7 @@ class Chanel(models.Model):
 
 
 class Published(models.Model):
-    author = models.OneToOneField('Chanel', on_delete=models.CASCADE)
+    channel = models.OneToOneField('Channel', on_delete=models.CASCADE)
     article = models.OneToOneField('Article', on_delete=models.CASCADE)
     prodashka = models.OneToOneField('Prodashka', on_delete=models.CASCADE)
 
@@ -83,8 +84,9 @@ class Published(models.Model):
 
 
 class PublishedPost(models.Model):
-    author = models.ForeignKey('Chanel', on_delete=models.CASCADE, verbose_name='Канал')
+    channel = models.ForeignKey('Channel', on_delete=models.CASCADE, verbose_name='Канал')
     post = models.ForeignKey('Post', on_delete=models.CASCADE, verbose_name='Пост')
+    state = models.BooleanField(default=False, verbose_name='Опубликовано')
     prodashka = models.ForeignKey('Prodashka', on_delete=models.CASCADE, null=True, verbose_name='продашка')
 
     def __str__(self):
