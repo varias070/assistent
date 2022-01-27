@@ -70,6 +70,20 @@ class Channel(models.Model):
         return self.title
 
 
+class Proxy(models.Model):
+    ip = models.CharField(null=True, max_length=20)
+    login = models.CharField(null=True, max_length=20)
+    port = models.IntegerField(null=True, max_length=20)
+    password = models.CharField(null=True, max_length=30)
+
+    def __str__(self):
+        return self.ip
+
+    class Meta:
+        verbose_name = 'Прокси'
+        verbose_name_plural = 'Прокси'
+
+
 class Published(models.Model):
     channel = models.OneToOneField('Channel', on_delete=models.CASCADE)
     article = models.OneToOneField('Article', on_delete=models.CASCADE)
@@ -87,7 +101,8 @@ class PublishedPost(models.Model):
     channel = models.ForeignKey('Channel', on_delete=models.CASCADE, verbose_name='Канал')
     post = models.ForeignKey('Post', on_delete=models.CASCADE, verbose_name='Пост')
     state = models.BooleanField(default=False, verbose_name='Опубликовано')
-    prodashka = models.ForeignKey('Prodashka', on_delete=models.CASCADE, null=True, verbose_name='продашка')
+    prodashka = models.ForeignKey('Prodashka', on_delete=models.CASCADE, null=True, verbose_name='Продашка')
+    proxy = models.ForeignKey('Proxy', on_delete=models.CASCADE, null=True, verbose_name='Прокси')
 
     def __str__(self):
         return str(self.id)
