@@ -74,25 +74,34 @@ class SeleniumClient:
         time.sleep(1)
         self.login(published)
         self.navigate()
-        editor = self.driver.find_element(By.CSS_SELECTOR, 'div[class="ql-editor ql-blank"]')
+        try:
+            editor = WebDriverWait(self.driver, 100).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="ql-editor ql-blank"]')))
 
-        editor.send_keys(published.prodashka.text)
-        p = editor.find_element(By.CSS_SELECTOR, 'p')
-        p.send_keys(Keys.CONTROL + 'a')
-        time.sleep(1)
-        link_input = WebDriverWait(self.driver, 100).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[class="ui-lib-input__control"]')))
-        link_input.send_keys(published.prodashka.link)
+            editor.send_keys(published.prodashka.text)
+            p = editor.find_element(By.CSS_SELECTOR, 'p')
+            p.send_keys(Keys.CONTROL + 'a')
+            time.sleep(1)
+            link_input = WebDriverWait(self.driver, 100).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[class="ui-lib-input__control"]')))
+            link_input.send_keys(published.prodashka.link)
 
-        p.click()
-        p.send_keys(published.post.text)
-        p.send_keys(Keys.ENTER)
+            p.click()
+            p.send_keys(published.post.text)
+            p.send_keys(Keys.ENTER)
 
-        label = WebDriverWait(self.driver, 100).until(
-            EC.visibility_of_element_located(
-                (By.CSS_SELECTOR, 'label[class="brief-desktop-editor-image-button brief-desktop-editor-content__add-image"]')))
-        label_input = label.find_element(By.CSS_SELECTOR, 'input[class="brief-desktop-editor-image-button__file-input"]')
-        label_input.send_keys(str(BASE_DIR) + published.post.image.url)
+            label = WebDriverWait(self.driver, 100).until(
+                EC.visibility_of_element_located(
+                    (By.CSS_SELECTOR, 'label[class="brief-desktop-editor-image-button brief-desktop-editor-content__add-image"]')))
+            label_input = label.find_element(By.CSS_SELECTOR, 'input[class="brief-desktop-editor-image-button__file-input"]')
+            label_input.send_keys(str(BASE_DIR) + published.post.image.url)
 
-        button_publish = self.driver.find_element(By.CSS_SELECTOR, 'button[class="Button2 Button2_view_action Button2_size_m brief-desktop-editor-content__publish-button"]')
-        button_publish.click()
+            button_publish = WebDriverWait(self.driver, 100).until(
+                EC.visibility_of_element_located(
+                    (By.CSS_SELECTOR, 'button[class="Button2 Button2_view_action Button2_size_m brief-desktop-editor-content__publish-button"]')))
+            time.sleep(3)
+            button_publish.click()
+            time.sleep(3)
+
+        except Exception as exc:
+            print(exc)

@@ -1,4 +1,3 @@
-import os
 import zipfile
 
 from selenium import webdriver
@@ -79,4 +78,30 @@ def get_chromedriver(instance_id, use_proxy=False, user_agent=None):
     if user_agent:
         chrome_options.add_argument('--user-agent=%s' % user_agent)
     driver = webdriver.Chrome(chrome_options=chrome_options)
+    return driver
+
+
+def get_chromedriver_remote(instance_id, use_proxy=False, user_agent=None):
+    capabilities = {
+        "browserName": "chrome",
+        "version": "78.0",
+        "platform": "LINUX"
+    }
+
+    params = get_params(instance_id)
+    chrome_options = webdriver.ChromeOptions()
+    if use_proxy:
+        pluginfile = 'proxy_auth_plugin.zip'
+
+        with zipfile.ZipFile(pluginfile, 'w') as zp:
+            zp.writestr("manifest.json", params[0])
+            zp.writestr("background.js", params[1])
+        chrome_options.add_extension(pluginfile)
+    if user_agent:
+        chrome_options.add_argument('--user-agent=%s' % user_agent)
+    driver = webdriver.Remote(
+        command_executor='http://localhost:444',
+        desired_capabilities=capabilities,
+        options=chrome_options
+    )
     return driver
