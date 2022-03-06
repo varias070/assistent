@@ -1,11 +1,11 @@
 import time
-from selenium.webdriver import Keys
+from selenium.webdriver import Keys, ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from articlegenerator.settings import *
 
-from articles.models import PublishedPost
+from articles.models import PublishedPost, Published
 
 
 class Publicator:
@@ -15,13 +15,8 @@ class Publicator:
         self.instance_id = instance_id
 
     def run(self):
-        published = PublishedPost.objects.get(id=self.instance_id)
-        if published.state:
-            pass
-        else:
-            self.client.publish(published)
-            published.state = True
-            published.save()
+        published = Published.objects.get(id=self.instance_id)
+        self.client.publish(published)
 
 
 class SeleniumClient:
@@ -64,7 +59,7 @@ class SeleniumClient:
             button_add.click()
             button_add_list = self.driver.find_elements(By.CSS_SELECTOR,
                                                         'button[class="ui-lib-context-menu__item new-publication-dropdown__button"]')
-            button_add = button_add_list[1]
+            button_add = button_add_list[0]
             button_add.click()
         except Exception as exc:
             print(exc)
@@ -74,34 +69,20 @@ class SeleniumClient:
         time.sleep(1)
         self.login(published)
         self.navigate()
+        time.sleep(2)
+        blank = WebDriverWait(self.driver, 100).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[class="ReactModal__Content ReactModal__Content--after-open help-popup"]')))
+
+
         try:
             editor = WebDriverWait(self.driver, 100).until(
-                EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="ql-editor ql-blank"]')))
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="editor__content"]')))
+            header = WebDriverWait(editor, 100).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="editable-input editor__title-input"]')))
+            header.send_keys(published.article.header)
 
-            editor.send_keys(published.prodashka.text)
-            p = editor.find_element(By.CSS_SELECTOR, 'p')
-            p.send_keys(Keys.CONTROL + 'a')
-            time.sleep(1)
-            link_input = WebDriverWait(self.driver, 100).until(
-                EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[class="ui-lib-input__control"]')))
-            link_input.send_keys(published.prodashka.link)
-
-            p.click()
-            p.send_keys(published.post.text)
-            p.send_keys(Keys.ENTER)
-
-            label = WebDriverWait(self.driver, 100).until(
-                EC.visibility_of_element_located(
-                    (By.CSS_SELECTOR, 'label[class="brief-desktop-editor-image-button brief-desktop-editor-content__add-image"]')))
-            label_input = label.find_element(By.CSS_SELECTOR, 'input[class="brief-desktop-editor-image-button__file-input"]')
-            label_input.send_keys(str(BASE_DIR) + published.post.image.url)
-
-            button_publish = WebDriverWait(self.driver, 100).until(
-                EC.visibility_of_element_located(
-                    (By.CSS_SELECTOR, 'button[class="Button2 Button2_view_action Button2_size_m brief-desktop-editor-content__publish-button"]')))
-            time.sleep(10)
-            button_publish.click()
-            time.sleep(10)
-
+            image = WebDriverWait(self.driver, 100).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'button[class="side-button side-button_logo_image"]')))
+            image.click()
         except Exception as exc:
             print(exc)

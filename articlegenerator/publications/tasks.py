@@ -7,8 +7,8 @@ from publications.post_publicator import *
 
 @shared_task
 def start_post_publicator(instance_id):
-    # driver = get_chromedriver(instance_id, use_proxy=True)
-    driver = get_chromedriver_remote(instance_id, use_proxy=True)
+    driver = get_chromedriver(instance_id, use_proxy=True)
+    # driver = get_chromedriver_remote(instance_id, use_proxy=True)
 
     try:
         client = SeleniumClient(driver)

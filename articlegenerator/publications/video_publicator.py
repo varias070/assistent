@@ -20,8 +20,8 @@ class Publicator:
             pass
         else:
             self.client.publish(published)
-            published.state = True
-            published.save()
+            # published.state = True
+            # published.save()
 
 
 class SeleniumClient:
@@ -64,7 +64,7 @@ class SeleniumClient:
             button_add.click()
             button_add_list = self.driver.find_elements(By.CSS_SELECTOR,
                                                         'button[class="ui-lib-context-menu__item new-publication-dropdown__button"]')
-            button_add = button_add_list[1]
+            button_add = button_add_list[2]
             button_add.click()
         except Exception as exc:
             print(exc)
@@ -75,33 +75,15 @@ class SeleniumClient:
         self.login(published)
         self.navigate()
         try:
-            editor = WebDriverWait(self.driver, 100).until(
-                EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="ql-editor ql-blank"]')))
-
-            editor.send_keys(published.prodashka.text)
-            p = editor.find_element(By.CSS_SELECTOR, 'p')
-            p.send_keys(Keys.CONTROL + 'a')
-            time.sleep(1)
-            link_input = WebDriverWait(self.driver, 100).until(
-                EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[class="ui-lib-input__control"]')))
-            link_input.send_keys(published.prodashka.link)
-
-            p.click()
-            p.send_keys(published.post.text)
-            p.send_keys(Keys.ENTER)
-
-            label = WebDriverWait(self.driver, 100).until(
-                EC.visibility_of_element_located(
-                    (By.CSS_SELECTOR, 'label[class="brief-desktop-editor-image-button brief-desktop-editor-content__add-image"]')))
-            label_input = label.find_element(By.CSS_SELECTOR, 'input[class="brief-desktop-editor-image-button__file-input"]')
-            label_input.send_keys(str(BASE_DIR) + published.post.image.url)
-
-            button_publish = WebDriverWait(self.driver, 100).until(
-                EC.visibility_of_element_located(
-                    (By.CSS_SELECTOR, 'button[class="Button2 Button2_view_action Button2_size_m brief-desktop-editor-content__publish-button"]')))
-            time.sleep(10)
-            button_publish.click()
-            time.sleep(10)
-
+            link_input = WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[class="video-upload-dialog__file"]')))
+            link_input.send_keys(published.link)
+            blank = WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="ui-lib-modal__content publication-modal video-settings-redesign__modal-3X')))
+            header = blank.find_element(By.CSS_SELECTOR, 'span[class="Textarea-Wrap"]')
+            header.send_keys(published.header)
+            button_published = WebDriverWait(self.driver, 100000).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'button[class="Button2 Button2_view_action Button2_size_l form-actions__action-15"]')))
+            button_published.click()
         except Exception as exc:
             print(exc)
