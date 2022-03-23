@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.db import models
 
 
@@ -18,6 +17,7 @@ class Article(models.Model):
 
 
 class Post(models.Model):
+    title = models.TextField(null=True, verbose_name='Название')
     text = models.TextField(null=True, verbose_name='Текст')
     image = models.ImageField(upload_to='post/%Y/%m', null=True, verbose_name='Картинка')
     link = models.TextField(null=True, verbose_name='Ссылка', blank=True)
@@ -28,20 +28,6 @@ class Post(models.Model):
     class Meta:
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
-
-
-class Image(models.Model):
-    image = models.ImageField(verbose_name='картинка')
-    link = models.TextField(null=True)
-    article = models.ForeignKey('Article', null=True,  on_delete=models.CASCADE,
-                                verbose_name='статья на которой расположенна картинка')
-
-    def __str__(self):
-        return self.article.header
-
-    class Meta:
-        verbose_name = 'Изображение'
-        verbose_name_plural = 'Изображения'
 
 
 class Prodashka(models.Model):
@@ -68,6 +54,16 @@ class Channel(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Video(models.Model):
+    header = models.TextField(null=True, verbose_name='Название')
+    link = models.FileField(upload_to='video/%Y/%m', null=True, verbose_name='Видео')
+    cover = models.ImageField(upload_to='video/cover/%Y/%m', null=True, verbose_name='Обложка')
+
+    class Meta:
+        verbose_name = 'Видео'
+        verbose_name_plural = 'Видео'
 
 
 class Proxy(models.Model):
@@ -110,3 +106,18 @@ class PublishedPost(models.Model):
     class Meta:
         verbose_name = 'Публикация поста'
         verbose_name_plural = 'Публикации постов'
+
+
+class PublishedVideo(models.Model):
+    video = models.ForeignKey('Video', on_delete=models.CASCADE, verbose_name='Видео')
+    channel = models.ForeignKey('Channel', on_delete=models.CASCADE, verbose_name='Канал')
+    state = models.BooleanField(default=False, verbose_name='Опубликовано')
+    prodashka = models.ForeignKey('Prodashka', on_delete=models.CASCADE, null=True, verbose_name='Продашка')
+    proxy = models.ForeignKey('Proxy', on_delete=models.CASCADE, null=True, verbose_name='Прокси')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Публикация видео'
+        verbose_name_plural = 'Публикации видео'

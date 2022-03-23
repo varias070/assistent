@@ -1,15 +1,18 @@
 import zipfile
 
 from selenium import webdriver
-from articles.models import PublishedPost
+from articles.models import PublishedPost, PublishedVideo
 
 
-def get_params(instance_id):
-    post = PublishedPost.objects.get(id=instance_id)
-    PROXY_HOST = post.proxy.ip
-    PROXY_PORT = post.proxy.port
-    PROXY_USER = post.proxy.login
-    PROXY_PASS = post.proxy.password
+def get_params(instance_id, index):
+    if index == 1:
+        publication = PublishedPost.objects.get(id=instance_id)
+    elif index == 2:
+        publication = PublishedVideo.objects.get(id=instance_id)
+    PROXY_HOST = publication.proxy.ip
+    PROXY_PORT = publication.proxy.port
+    PROXY_USER = publication.proxy.login
+    PROXY_PASS = publication.proxy.password
 
     manifest_json = """
     {
@@ -65,8 +68,8 @@ def get_params(instance_id):
     return manifest_json, background_js
 
 
-def get_chromedriver(instance_id, use_proxy=False, user_agent=None):
-    params = get_params(instance_id)
+def get_chromedriver(index, instance_id, use_proxy=False, user_agent=None):
+    params = get_params(instance_id, index)
     chrome_options = webdriver.ChromeOptions()
     if use_proxy:
         pluginfile = 'proxy_auth_plugin.zip'
@@ -77,18 +80,19 @@ def get_chromedriver(instance_id, use_proxy=False, user_agent=None):
         chrome_options.add_extension(pluginfile)
     if user_agent:
         chrome_options.add_argument('--user-agent=%s' % user_agent)
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     driver = webdriver.Chrome(chrome_options=chrome_options)
     return driver
 
 
-def get_chromedriver_remote(instance_id, use_proxy=False, user_agent=None):
+def get_chromedriver_remote(index, instance_id, use_proxy=False, user_agent=None):
     capabilities = {
         "browserName": "chrome",
         "version": "78.0",
         "platform": "LINUX"
     }
 
-    params = get_params(instance_id)
+    params = get_params(instance_id, index)
     chrome_options = webdriver.ChromeOptions()
     if use_proxy:
         pluginfile = 'proxy_auth_plugin.zip'
@@ -99,6 +103,7 @@ def get_chromedriver_remote(instance_id, use_proxy=False, user_agent=None):
         chrome_options.add_extension(pluginfile)
     if user_agent:
         chrome_options.add_argument('--user-agent=%s' % user_agent)
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     driver = webdriver.Remote(
         command_executor='http://localhost:444',
         desired_capabilities=capabilities,

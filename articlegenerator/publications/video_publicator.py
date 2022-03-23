@@ -5,7 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from articlegenerator.settings import *
 
-from articles.models import PublishedPost
+from articles.models import PublishedVideo
 
 
 class Publicator:
@@ -15,7 +15,7 @@ class Publicator:
         self.instance_id = instance_id
 
     def run(self):
-        published = PublishedPost.objects.get(id=self.instance_id)
+        published = PublishedVideo.objects.get(id=self.instance_id)
         if published.state:
             pass
         else:
@@ -75,14 +75,25 @@ class SeleniumClient:
         self.login(published)
         self.navigate()
         try:
-            link_input = WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[class="video-upload-dialog__file"]')))
-            link_input.send_keys(published.link)
+            window = WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="ReactModal__Content ReactModal__Content--after-open up-popup video-upload-dialog__up-popup"]')))
+            link_input = window.find_element(By.CSS_SELECTOR, 'input[class="video-upload-dialog__file"]')
+            # link_input = WebDriverWait(self.driver, 10).until(
+            #     EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[class="video-upload-dialog__file"]')))
+            link_input.send_keys(str(BASE_DIR) + published.video.link.url)
             blank = WebDriverWait(self.driver, 10).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="ui-lib-modal__content publication-modal video-settings-redesign__modal-3X')))
-            header = blank.find_element(By.CSS_SELECTOR, 'span[class="Textarea-Wrap"]')
-            header.send_keys(published.header)
-            button_published = WebDriverWait(self.driver, 100000).until(
+
+            header = blank.find_element(By.CSS_SELECTOR, 'textarea[class="Textarea-Control Textarea-Control_withMargin"]')
+            header.send_keys(published.video.header)
+
+            cover = blank.find_element(By.CSS_SELECTOR, 'input[type="file"]')
+            cover.send_keys(str(BASE_DIR) + published.video.cover.url)
+
+            prodashka = blank.find_element(By.CSS_SELECTOR, 'textarea[class="Textarea-Control Textarea-Control_withMargin"]')
+            prodashka.send_keys(published.prodashka.text)
+            time.sleep(15)
+            button_published = WebDriverWait(self.driver, 100).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, 'button[class="Button2 Button2_view_action Button2_size_l form-actions__action-15"]')))
             button_published.click()
         except Exception as exc:
