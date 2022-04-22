@@ -1,7 +1,7 @@
 import zipfile
 
 from selenium import webdriver
-from articles.models import PublishedPost, PublishedVideo
+from articles.models import PublishedPost, PublishedVideo, PublishedArticle
 
 
 def get_params(instance_id, index):
@@ -9,6 +9,8 @@ def get_params(instance_id, index):
         publication = PublishedPost.objects.get(id=instance_id)
     elif index == 2:
         publication = PublishedVideo.objects.get(id=instance_id)
+    elif index == 3:
+        publication = PublishedArticle.objects.get(id=instance_id)
     PROXY_HOST = publication.proxy.ip
     PROXY_PORT = publication.proxy.port
     PROXY_USER = publication.proxy.login

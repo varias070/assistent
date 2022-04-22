@@ -1,11 +1,13 @@
 import time
-from selenium.webdriver import Keys, ActionChains
+import pyperclip
+
+from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from articlegenerator.settings import *
 
-from articles.models import PublishedPost, Published
+from articles.models import PublishedArticle, ArticleBlock
 
 
 class Publicator:
@@ -15,8 +17,11 @@ class Publicator:
         self.instance_id = instance_id
 
     def run(self):
-        published = Published.objects.get(id=self.instance_id)
-        self.client.publish(published)
+        published = PublishedArticle.objects.get(id=self.instance_id)
+        article_blocks = ArticleBlock.objects.filter(article=published.article.id)
+        self.client.publish(published, article_blocks)
+        published.state = True
+        published.save()
 
 
 class SeleniumClient:
@@ -64,25 +69,54 @@ class SeleniumClient:
         except Exception as exc:
             print(exc)
 
-    def publish(self, published):
+    def publish(self, published, article_blocks):
         self.driver.get('https://zen.yandex.ru/')
         time.sleep(1)
         self.login(published)
         self.navigate()
-        time.sleep(2)
-        blank = WebDriverWait(self.driver, 100).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[class="ReactModal__Content ReactModal__Content--after-open help-popup"]')))
-
+        # клик в свободной точки для что бы закрыть диалоговое окно
+        self.driver.execute_script('el = document.elementFromPoint(440, 120); el.click();')
 
         try:
-            editor = WebDriverWait(self.driver, 100).until(
-                EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="editor__content"]')))
-            header = WebDriverWait(editor, 100).until(
-                EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="editable-input editor__title-input"]')))
+            header = WebDriverWait(self.driver, 100).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="public-DraftStyleDefault-block public-DraftStyleDefault-ltr"]')))
             header.send_keys(published.article.header)
-
-            image = WebDriverWait(self.driver, 100).until(
+            content = WebDriverWait(self.driver, 100).until(
+                EC.visibility_of_element_located(
+                    (By.CSS_SELECTOR, 'div[class="zen-editor-block zen-editor-block-paragraph"]')))
+            button_image = WebDriverWait(self.driver, 100).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, 'button[class="side-button side-button_logo_image"]')))
-            image.click()
+
+            if published.prodaska:
+                content.send_keys(published.prodaska.text)
+                content.send_keys(Keys.ENTER)
+
+            for block in article_blocks:
+                if block.text:
+                    content.send_keys(block.text)
+                    content.send_keys(Keys.ENTER)
+
+                elif block.src:
+                    time.sleep(1)
+                    button_image.click()
+                    input_image = WebDriverWait(self.driver, 100).until(
+                        EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[placeholder="Ссылка"]')))
+                    pyperclip.copy(block.src)
+                    input_image.click()
+                    input_image.send_keys(Keys.CONTROL + 'v')
+
+            if published.prodaska:
+                content.send_keys(published.prodaska.text)
+                content.send_keys(Keys.CONTROL + 'a')
+
+            button_publication = WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'button[class="Button2 Button2_view_action Button2_size_s editor-header__edit-btn"]')))
+            button_publication.click()
+
+            button_publication2 = WebDriverWait(self.driver, 100).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'button[class="ui-lib-button-base _is-transition-enabled ui-lib-button _size_l _view-type_yellow _width-type_regular publication-settings-actions__action"]')))
+            button_publication2.click()
+
+            time.sleep(5)
         except Exception as exc:
             print(exc)

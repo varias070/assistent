@@ -1,5 +1,4 @@
 import time
-from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
@@ -16,12 +15,9 @@ class Publicator:
 
     def run(self):
         published = PublishedVideo.objects.get(id=self.instance_id)
-        if published.state:
-            pass
-        else:
-            self.client.publish(published)
-            # published.state = True
-            # published.save()
+        self.client.publish(published)
+        published.state = True
+        published.save()
 
 
 class SeleniumClient:

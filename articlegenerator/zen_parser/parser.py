@@ -5,7 +5,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from articles.models import Article, Image
+from articles.models import Article, ArticleBlock
+
+
+counter = 0
 
 
 class Parser:
@@ -14,15 +17,19 @@ class Parser:
         self.client = client
 
     def run(self):
-        # for n in range(802, 812):
-        article = Article.objects.get(id=808)
+        article = Article.objects.get(id=25802)
         data = self.client.extract(article)
-        if data is None:
-            print(article.link + 'none')
-        else:
-            article.text = data[1]
-            article.header = data[0]
-            article.save()
+
+        for e in data:
+            block = ArticleBlock(article=article, text=e.text, ordering_number=self.increment(), src=e.get_attribute('src'))
+            block.save()
+
+    @staticmethod
+    def increment():
+        global counter
+        counter += 1
+        counterString = counter.__str__()
+        return counterString
 
 
 class SeleniumClient:
@@ -37,25 +44,19 @@ class SeleniumClient:
         }
 
     def extract(self, article):
-        content = []
-        list_src = []
         self.driver.get(article.link)
-        print(article.link)
         time.sleep(1)
         try:
             body = WebDriverWait(self.driver, 10).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, 'div[class="article-render"]')))
-            header = self.driver.find_element(By.TAG_NAME, 'h1').text
             element = body.find_elements(By.CSS_SELECTOR, '*')
 
-            result = [header, content, list_src]
+            result = []
             for e in element:
-                if e.tag_name == 'p':
-                    content.append(e.text)
+                if e.tag_name == 'span':
+                    result.append(e)
                 elif e.tag_name == 'img':
-                    src = e.get_attribute("src")
-                    content.append(src)
-                    list_src.append(src)
+                    result.append(e)
             return result
         except Exception as exc:
             return exc

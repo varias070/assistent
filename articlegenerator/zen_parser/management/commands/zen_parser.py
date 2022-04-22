@@ -1,4 +1,3 @@
-import time
 import random
 
 from django.core.management import BaseCommand
@@ -8,7 +7,7 @@ from zen_parser.parser import SeleniumClient, Parser
 
 
 class Command(BaseCommand):
-    help = 'Parser zena'
+    help = 'Parser dzena'
 
     def handle(self, *args, **options):
         driver = webdriver.Chrome()

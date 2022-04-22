@@ -63,9 +63,9 @@ class SeleniumClient:
         try:
             next_page = WebDriverWait(self.driver, 90000000000).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, 'li[class="page-item page-next"]')))
+            next_page.click()
         except Exception as exc:
             print('get_links не работает', exc)
-        next_page.click()
 
     def get_page(self, pages):
         links = []

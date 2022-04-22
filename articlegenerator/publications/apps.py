@@ -6,4 +6,4 @@ class PublicationsConfig(AppConfig):
     name = 'publications'
 
     def ready(self):
-        from . import signals
+        pass

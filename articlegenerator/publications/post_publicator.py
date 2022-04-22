@@ -16,12 +16,9 @@ class Publicator:
 
     def run(self):
         published = PublishedPost.objects.get(id=self.instance_id)
-        if published.state:
-            pass
-        else:
-            self.client.publish(published)
-            published.state = True
-            published.save()
+        self.client.publish(published)
+        published.state = True
+        published.save()
 
 
 class SeleniumClient:

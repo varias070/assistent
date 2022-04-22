@@ -3,17 +3,26 @@ from django.db import models
 
 class Article(models.Model):
     header = models.TextField(null=True, verbose_name='Заголовок')
-    text = models.TextField(null=True, verbose_name='Текст')
     link = models.TextField(null=True)
 
     def __str__(self):
-        return self.link
+        return self.header
 
     class Meta:
         ordering = ('header',)
         verbose_name = 'Статья'
         verbose_name_plural = 'Статьи'
         app_label = 'articles'
+
+
+class ArticleBlock(models.Model):
+    article = models.ForeignKey('Article', on_delete=models.CASCADE)
+    text = models.TextField(null=True, verbose_name='Текст')
+    src = models.URLField(null=True, verbose_name='Текст')
+    ordering_number = models.IntegerField(null=True, max_length=20)
+
+    def __str__(self):
+        return self.article
 
 
 class Post(models.Model):
@@ -23,7 +32,7 @@ class Post(models.Model):
     link = models.TextField(null=True, verbose_name='Ссылка', blank=True)
 
     def __str__(self):
-        return str(self.id)
+        return self.title
 
     class Meta:
         verbose_name = 'Пост'
@@ -65,6 +74,9 @@ class Video(models.Model):
         verbose_name = 'Видео'
         verbose_name_plural = 'Видео'
 
+    def __str__(self):
+        return self.header
+
 
 class Proxy(models.Model):
     ip = models.CharField(null=True, max_length=20)
@@ -80,28 +92,30 @@ class Proxy(models.Model):
         verbose_name_plural = 'Прокси'
 
 
-class Published(models.Model):
-    channel = models.OneToOneField('Channel', on_delete=models.CASCADE)
-    article = models.OneToOneField('Article', on_delete=models.CASCADE)
-    prodashka = models.OneToOneField('Prodashka', on_delete=models.CASCADE)
+class PublishedArticle(models.Model):
+    channel = models.ForeignKey('Channel', on_delete=models.CASCADE)
+    article = models.ForeignKey('Article', on_delete=models.CASCADE)
+    prodashka = models.ForeignKey('Prodashka', on_delete=models.CASCADE)
+    proxy = models.ForeignKey('Proxy', on_delete=models.CASCADE, null=True, verbose_name='Прокси')
+    state = models.BooleanField(default=False, verbose_name='О')
 
     def __str__(self):
-        return str(self.id)
+        return self.article
 
     class Meta:
-        verbose_name = 'Публикация'
-        verbose_name_plural = 'Публикации'
+        verbose_name = 'Публикация статей'
+        verbose_name_plural = 'Публикации статей'
 
 
 class PublishedPost(models.Model):
     channel = models.ForeignKey('Channel', on_delete=models.CASCADE, verbose_name='Канал')
     post = models.ForeignKey('Post', on_delete=models.CASCADE, verbose_name='Пост')
-    state = models.BooleanField(default=False, verbose_name='Опубликовано')
+    state = models.BooleanField(default=False, verbose_name='О')
     prodashka = models.ForeignKey('Prodashka', on_delete=models.CASCADE, null=True, verbose_name='Продашка')
     proxy = models.ForeignKey('Proxy', on_delete=models.CASCADE, null=True, verbose_name='Прокси')
 
     def __str__(self):
-        return str(self.id)
+        return self.post
 
     class Meta:
         verbose_name = 'Публикация поста'
@@ -111,12 +125,12 @@ class PublishedPost(models.Model):
 class PublishedVideo(models.Model):
     video = models.ForeignKey('Video', on_delete=models.CASCADE, verbose_name='Видео')
     channel = models.ForeignKey('Channel', on_delete=models.CASCADE, verbose_name='Канал')
-    state = models.BooleanField(default=False, verbose_name='Опубликовано')
+    state = models.BooleanField(default=False, verbose_name='О')
     prodashka = models.ForeignKey('Prodashka', on_delete=models.CASCADE, null=True, verbose_name='Продашка')
     proxy = models.ForeignKey('Proxy', on_delete=models.CASCADE, null=True, verbose_name='Прокси')
 
     def __str__(self):
-        return str(self.id)
+        return self.video
 
     class Meta:
         verbose_name = 'Публикация видео'
