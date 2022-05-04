@@ -100,7 +100,7 @@ class PublishedArticle(models.Model):
     state = models.BooleanField(default=False, verbose_name='О')
 
     def __str__(self):
-        return self.article
+        return str(self.article)
 
     class Meta:
         verbose_name = 'Публикация статей'
@@ -115,7 +115,7 @@ class PublishedPost(models.Model):
     proxy = models.ForeignKey('Proxy', on_delete=models.CASCADE, null=True, verbose_name='Прокси')
 
     def __str__(self):
-        return self.post
+        return str(self.post)
 
     class Meta:
         verbose_name = 'Публикация поста'
@@ -130,7 +130,7 @@ class PublishedVideo(models.Model):
     proxy = models.ForeignKey('Proxy', on_delete=models.CASCADE, null=True, verbose_name='Прокси')
 
     def __str__(self):
-        return self.video
+        return str(self.video)
 
     class Meta:
         verbose_name = 'Публикация видео'

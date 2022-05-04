@@ -8,10 +8,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from articles.models import Article, ArticleBlock
 
 
-counter = 0
-
-
 class Parser:
+    counter = 0
 
     def __init__(self, client):
         self.client = client
@@ -24,11 +22,9 @@ class Parser:
             block = ArticleBlock(article=article, text=e.text, ordering_number=self.increment(), src=e.get_attribute('src'))
             block.save()
 
-    @staticmethod
-    def increment():
-        global counter
-        counter += 1
-        counterString = counter.__str__()
+    def increment(self):
+        self.counter += 1
+        counterString = self.counter.__str__()
         return counterString
 
 
