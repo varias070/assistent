@@ -1,0 +1,16 @@
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User=artem
+WorkingDirectory=/home/artem/Desktop/Progect/articlegenerator
+ExecStart=/home/artem/Desktop/Progect/venv/bin/gunicorn \
+    articlegenerator.wsgi:application \
+    --access-logfile - \
+    --workers 3 \
+    --bind unix:/run/gunicorn.sock
+
+[Install]
+WantedBy=multi-user.target
+
