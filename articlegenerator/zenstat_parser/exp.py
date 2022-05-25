@@ -9,7 +9,7 @@ from .models import ParserState
 
 class Parser:
 
-    def __init__(self, client, start):
+    def __init__(self, client):
         self.client = client
         self.pages = [1, 100]
 
@@ -23,8 +23,8 @@ class Parser:
             article.save()
             articles_numbers.append(article.id)
             i += 1
-            if i == 50:
-                i = 0
+            if i == 50:  # 50 links per page
+                i = 0   # reset page links
                 page += 1
                 state = ParserState(page_number=page)
                 state.save()
